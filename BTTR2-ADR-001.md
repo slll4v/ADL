@@ -1,0 +1,38 @@
+# Use OpenRouter at the gateway layer during the experiment
+
+**Status:** Proposed *(scoped to the experiment phase; intended to be superseded once model selection is finalized)*
+
+# Context
+
+BTTR produces public municipal reports. The inputs to the pipeline are derived from public municipal data, so confidentiality requirements are low; however, prompts still transit a third-party gateway and are forwarded to each underlying model provider, where provider-specific data-retention policies apply.
+
+At this stage we are running an experiment to determine which models actually work for our use case. The immediate need is broad access to many models and visibility into cost, not production-grade routing. Once we know which models perform, we will move to a more advanced self-hosted/managed router in the BTTR platform. The gateway choice made here is therefore expected to be temporary.
+
+# Decision
+
+We will use OpenRouter at the gateway layer to access models for the experiment. Some models not available through OpenRouter will be accessed via their own provider APIs. This decision is scoped to the experiment phase and is intended to be replaced by a more suitable router once model selection is complete. 
+
+To protect experiment integrity, we will always pin explicit model IDs (never use `openrouter/auto` or similar routers) and always log the `model` field from every response to verify which model actually answered each query.
+
+# Consequences
+### Positive:
+
+- Zero setup and no infrastructure to run
+- Universal API key and a single consolidated bill
+- Access to 400+ models across 70+ providers through one endpoint
+- One-parameter model switching (i.e. no code changes required)
+- OpenAI-compatible API (hence, easy migration)
+- No per-token markup — token pricing matches going direct to the provider
+- Built-in cost tracking
+- Automatic provider fallback/failover
+
+### Negative / Neutral:
+
+- Relatively young company (est. 2023) with a shorter security track record
+- 5.5% fee on credit top-ups ($0.80 minimum)
+- Cannot route to self-hosted or custom fine-tuned models; some models still require their own provider APIs
+- Adds a network hop and a dependency on a third party's uptime
+- Inherits each provider's individual rate limits (e.g. Claude routes are subject to Anthropic's limits)
+- Prepaid credit model
+- If a model becomes unavailable and a fallback is triggered, OpenRouter silently switches to a different model — the only trace is the `model` field in the response. Without logging that field on every request, benchmark results could be contaminated. Mitigated by the logging requirement in the Decision above
+* New model versions may appear on OpenRouter with a delay

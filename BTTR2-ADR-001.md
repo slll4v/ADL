@@ -35,4 +35,4 @@ To protect experiment integrity, we will always pin explicit model IDs (never us
 - Inherits each provider's individual rate limits (e.g. Claude routes are subject to Anthropic's limits)
 - Prepaid credit model
 - If a model becomes unavailable and a fallback is triggered, OpenRouter silently switches to a different model — the only trace is the `model` field in the response. Without logging that field on every request, benchmark results could be contaminated. Mitigated by the logging requirement in the Decision above
-* New model versions may appear on OpenRouter with a delay
+- New model versions may appear on OpenRouter with a delay
